@@ -33,10 +33,7 @@ public class CursoDAOJDBC implements CursoDAO {
                             "VALUES (?, ?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS);
 
-            st.setString(1, obj.getNome());
-            st.setString(2, obj.getDescricao());
-            st.setInt(3, obj.getDuracaoHoras());
-            st.setInt(4, obj.getProfessores().getIdProfessor());
+            setCursoData(st, obj);
 
             int rowsAffected = st.executeUpdate();
 
@@ -66,10 +63,7 @@ public class CursoDAOJDBC implements CursoDAO {
                             "SET nome = ?, descricao = ?, duracao_horas = ?, id_professor = ? " +
                             "WHERE id_curso = ?");
 
-            st.setString(1, obj.getNome());
-            st.setString(2, obj.getDescricao());
-            st.setInt(3, obj.getDuracaoHoras());
-            st.setInt(4, obj.getProfessores().getIdProfessor());
+            setCursoData(st, obj);
             st.setInt(5, obj.getIdCurso());
 
             st.executeUpdate();
@@ -85,9 +79,7 @@ public class CursoDAOJDBC implements CursoDAO {
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement("DELETE FROM Cursos WHERE id_curso = ?");
-
             st.setInt(1, id);
-
             st.executeUpdate();
         } catch (SQLException e) {
             throw new DbIntegrityException(e.getMessage());
@@ -104,18 +96,12 @@ public class CursoDAOJDBC implements CursoDAO {
             st = conn.prepareStatement("SELECT * FROM Cursos WHERE id_curso = ?");
             st.setInt(1, id);
             rs = st.executeQuery();
+
             if (rs.next()) {
-                Cursos obj = new Cursos();
-                obj.setIdCurso(rs.getInt("id_curso"));
-                obj.setNome(rs.getString("nome"));
-                obj.setDescricao(rs.getString("descricao"));
-                obj.setDuracaoHoras(rs.getInt("duracao_horas"));
-
-                // Buscar professor associado
-                Professores professor = new Professores();
-                professor.setIdProfessor(rs.getInt("id_professor"));
-                obj.setProfessores(professor);
-
+                Cursos obj = instantiateCurso(rs);
+                printCursoHeader();
+                printCursoData(obj);
+                System.out.println("----------------------------------------------------------------------------------------------------------------");
                 return obj;
             }
             return null;
@@ -137,31 +123,15 @@ public class CursoDAOJDBC implements CursoDAO {
 
             List<Cursos> list = new ArrayList<>();
 
+            printCursoHeader();
+
             while (rs.next()) {
-                Cursos obj = new Cursos();
-                obj.setIdCurso(rs.getInt("id_curso"));
-                obj.setNome(rs.getString("nome"));
-                obj.setDescricao(rs.getString("descricao"));
-                obj.setDuracaoHoras(rs.getInt("duracao_horas"));
-
-                // Buscar professor associado
-                Professores professor = new Professores();
-                professor.setIdProfessor(rs.getInt("id_professor"));
-                obj.setProfessores(professor);
-
+                Cursos obj = instantiateCurso(rs);
                 list.add(obj);
-
-                // Formatar e imprimir os dados no console
-                String dadosCurso = String.format(
-                        "ID: %d \t NOME: %s \t DESCRIÇÃO: %s \t DURAÇÃO (horas): %d \t PROFESSOR: %s",
-                        rs.getInt("id_curso"),
-                        rs.getString("nome"),
-                        rs.getString("descricao"),
-                        rs.getInt("duracao_horas"),
-                        professor.getNome() // Nome do professor deve ser carregado de outra forma se necessário
-                );
-                System.out.println(dadosCurso);
+                printCursoData(obj);
             }
+
+            System.out.println("----------------------------------------------------------------------------------------------------------------");
             return list;
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
@@ -183,31 +153,15 @@ public class CursoDAOJDBC implements CursoDAO {
 
             List<Cursos> list = new ArrayList<>();
 
+            printCursoHeader();
+
             while (rs.next()) {
-                Cursos obj = new Cursos();
-                obj.setIdCurso(rs.getInt("id_curso"));
-                obj.setNome(rs.getString("nome"));
-                obj.setDescricao(rs.getString("descricao"));
-                obj.setDuracaoHoras(rs.getInt("duracao_horas"));
-
-                // Buscar professor associado
-                Professores professor = new Professores();
-                professor.setIdProfessor(rs.getInt("id_professor"));
-                obj.setProfessores(professor);
-
+                Cursos obj = instantiateCurso(rs);
                 list.add(obj);
-
-                // Formatar e imprimir os dados no console
-                String dadosCurso = String.format(
-                        "ID: %d \t NOME: %s \t DESCRIÇÃO: %s \t DURAÇÃO (horas): %d \t PROFESSOR: %s",
-                        rs.getInt("id_curso"),
-                        rs.getString("nome"),
-                        rs.getString("descricao"),
-                        rs.getInt("duracao_horas"),
-                        professor.getNome() // Nome do professor deve ser carregado de outra forma se necessário
-                );
-                System.out.println(dadosCurso);
+                printCursoData(obj);
             }
+
+            System.out.println("----------------------------------------------------------------------------------------------------------------");
             return list;
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
@@ -215,5 +169,42 @@ public class CursoDAOJDBC implements CursoDAO {
             DB.closeStatement(st);
             DB.closeResultSet(rs);
         }
+    }
+
+    private Cursos instantiateCurso(ResultSet rs) throws SQLException {
+        Cursos obj = new Cursos();
+        obj.setIdCurso(rs.getInt("id_curso"));
+        obj.setNome(rs.getString("nome"));
+        obj.setDescricao(rs.getString("descricao"));
+        obj.setDuracaoHoras(rs.getInt("duracao_horas"));
+
+        // Buscar professor associado
+        Professores professor = new Professores();
+        professor.setIdProfessor(rs.getInt("id_professor"));
+        obj.setProfessores(professor);
+
+        return obj;
+    }
+
+    private void setCursoData(PreparedStatement st, Cursos obj) throws SQLException {
+        st.setString(1, obj.getNome());
+        st.setString(2, obj.getDescricao());
+        st.setInt(3, obj.getDuracaoHoras());
+        st.setInt(4, obj.getProfessores().getIdProfessor());
+    }
+
+    private void printCursoHeader() {
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-5s %-20s %-30s %-20s %-15s%n", "| ID", "| NOME", "| DESCRIÇÃO", "| DURAÇÃO (horas)", "| PROFESSOR               |");
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+    }
+
+    private void printCursoData(Cursos obj) {
+        System.out.printf("  %-5d %-20s %-30s %-30d %-20d%n",
+                obj.getIdCurso(),
+                obj.getNome(),
+                obj.getDescricao(),
+                obj.getDuracaoHoras(),
+                obj.getProfessores().getIdProfessor()); // Nome do professor pode ser formatado de outra maneira se necessário
     }
 }

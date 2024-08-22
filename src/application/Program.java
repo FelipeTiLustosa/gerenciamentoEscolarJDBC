@@ -4,7 +4,10 @@ import db.DB;
 import model.dao.AlunoDAO;
 import model.dao.DaoFactory;
 import model.entities.Alunos;
+import model.services.AuthDAO;
+import model.services.AuthService;
 
+import java.sql.Connection;
 import java.time.LocalDate;
 
 public class Program {
@@ -25,5 +28,30 @@ public class Program {
 
         alunosDAO.buscarPorId(5);
         DB.closeConnection(DB.getConnection());
+
+        // Estabelecer a conexão com o banco de dados
+        Connection conn = null;
+
+            conn = DB.getConnection();
+
+            // Criar o DAO e o serviço de autenticação
+            AuthDAO authDAO = new AuthDAO(conn);
+            AuthService authService = new AuthService(authDAO);
+
+            // Dados de teste
+            int idAlunoTeste = 4;  // Substitua pelo ID do aluno existente no banco de dados
+            String senhaTeste = "senha";  // Substitua pela senha correta do aluno
+
+            // Realizar o teste de login
+            boolean loginBemSucedido = authService.loginAluno(idAlunoTeste, senhaTeste);
+
+            if (loginBemSucedido) {
+                System.out.println("Login do aluno foi bem-sucedido!");
+            } else {
+                System.out.println("Falha no login do aluno.");
+            }
+
+            DB.closeConnection(conn);
+
     }
 }

@@ -9,26 +9,30 @@ public class Professores implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Integer idProfessor;
+    private int idProfessor;
     private String nome;
     private LocalDate dataContratacao;
     private String departamento;
     private String telefone;
     private String email;
+    private String senha; // Novo atributo para senha
+    private boolean coordenador;
 
     // Construtor
     public Professores() {
 
     }
-    public Professores(Integer idProfessor, String nome, LocalDate dataContratacao, String departamento, String telefone, String email) {
+
+    public Professores(int idProfessor, String nome, LocalDate dataContratacao, String departamento, String telefone, String email, String senha, boolean coordenador) {
         this.idProfessor = idProfessor;
         this.nome = nome;
         this.dataContratacao = dataContratacao;
         this.departamento = departamento;
         this.telefone = telefone;
         this.email = email;
+        this.senha = senha;
+        this.coordenador = coordenador;
     }
-
     // Getters e Setters
 
     public Integer getIdProfessor() {
@@ -79,6 +83,19 @@ public class Professores implements Serializable {
         this.email = email;
     }
 
+    public String getSenha() {
+        return senha;
+    }
+
+
+    public boolean isCoordenador() {
+        return coordenador;
+    }
+
+    public void setCoordenador(boolean coordenador) {
+        this.coordenador = coordenador;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -94,7 +111,16 @@ public class Professores implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("ID: %d, Nome: %s, Data de Contratação: %s, Departamento: %s, Telefone: %s, Email: %s",
-                getIdProfessor(), getNome(), getDataContratacao().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), getDepartamento(), getTelefone(), getEmail());
+        return String.format(
+                "ID: %d, Nome: %s, Data de Contratação: %s, Departamento: %s, Telefone: %s, Email: %s, Coordenador: %b",
+                getIdProfessor(),
+                getNome(),
+                getDataContratacao().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                getDepartamento(),
+                getTelefone(),
+                getEmail(),
+                isCoordenador()
+        );
     }
+
 }

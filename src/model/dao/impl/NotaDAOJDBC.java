@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +35,7 @@ public class NotaDAOJDBC implements NotaDAO {
                             "VALUES (?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS);
 
-            st.setInt(1, obj.getMatricula().getIdMatricula());
-            st.setBigDecimal(2, obj.getNota());
-            st.setDate(3, Date.valueOf(obj.getDataAvaliacao()));
+            setNotaData(st, obj);
 
             int rowsAffected = st.executeUpdate();
 
@@ -68,9 +65,7 @@ public class NotaDAOJDBC implements NotaDAO {
                             "SET id_matricula = ?, nota = ?, data_avaliacao = ? " +
                             "WHERE id_nota = ?");
 
-            st.setInt(1, obj.getMatricula().getIdMatricula());
-            st.setBigDecimal(2, obj.getNota());
-            st.setDate(3, Date.valueOf(obj.getDataAvaliacao()));
+            setNotaData(st, obj);
             st.setInt(4, obj.getIdNota());
 
             st.executeUpdate();
@@ -86,9 +81,7 @@ public class NotaDAOJDBC implements NotaDAO {
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement("DELETE FROM Notas WHERE id_nota = ?");
-
             st.setInt(1, id);
-
             st.executeUpdate();
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
@@ -105,17 +98,12 @@ public class NotaDAOJDBC implements NotaDAO {
             st = conn.prepareStatement("SELECT * FROM Notas WHERE id_nota = ?");
             st.setInt(1, id);
             rs = st.executeQuery();
+
             if (rs.next()) {
-                Notas obj = new Notas();
-                obj.setIdNota(rs.getInt("id_nota"));
-                obj.setNota(rs.getBigDecimal("nota"));
-                obj.setDataAvaliacao(rs.getDate("data_avaliacao").toLocalDate());
-
-                // Buscar matrícula associada
-                Matriculas matricula = new Matriculas();
-                matricula.setIdMatricula(rs.getInt("id_matricula"));
-                obj.setMatricula(matricula);
-
+                Notas obj = instantiateNota(rs);
+                printNotaHeader();
+                printNotaData(obj);
+                System.out.println("----------------------------------------------------------------------------------------------------------------");
                 return obj;
             }
             return null;
@@ -137,29 +125,15 @@ public class NotaDAOJDBC implements NotaDAO {
 
             List<Notas> list = new ArrayList<>();
 
+            printNotaHeader();
+
             while (rs.next()) {
-                Notas obj = new Notas();
-                obj.setIdNota(rs.getInt("id_nota"));
-                obj.setNota(rs.getBigDecimal("nota"));
-                obj.setDataAvaliacao(rs.getDate("data_avaliacao").toLocalDate());
-
-                // Buscar matrícula associada
-                Matriculas matricula = new Matriculas();
-                matricula.setIdMatricula(rs.getInt("id_matricula"));
-                obj.setMatricula(matricula);
-
+                Notas obj = instantiateNota(rs);
                 list.add(obj);
-
-                // Formatar e imprimir os dados no console
-                String dadosNota = String.format(
-                        "ID: %d \t MATRÍCULA: %d \t NOTA: %.2f \t DATA: %s",
-                        rs.getInt("id_nota"),
-                        rs.getInt("id_matricula"),
-                        rs.getBigDecimal("nota"),
-                        rs.getDate("data_avaliacao").toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-                );
-                System.out.println(dadosNota);
+                printNotaData(obj);
             }
+
+            System.out.println("----------------------------------------------------------------------------------------------------------------");
             return list;
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
@@ -181,29 +155,15 @@ public class NotaDAOJDBC implements NotaDAO {
 
             List<Notas> list = new ArrayList<>();
 
+            printNotaHeader();
+
             while (rs.next()) {
-                Notas obj = new Notas();
-                obj.setIdNota(rs.getInt("id_nota"));
-                obj.setNota(rs.getBigDecimal("nota"));
-                obj.setDataAvaliacao(rs.getDate("data_avaliacao").toLocalDate());
-
-                // Buscar matrícula associada
-                Matriculas matricula = new Matriculas();
-                matricula.setIdMatricula(rs.getInt("id_matricula"));
-                obj.setMatricula(matricula);
-
+                Notas obj = instantiateNota(rs);
                 list.add(obj);
-
-                // Formatar e imprimir os dados no console
-                String dadosNota = String.format(
-                        "ID: %d \t MATRÍCULA: %d \t NOTA: %.2f \t DATA: %s",
-                        rs.getInt("id_nota"),
-                        rs.getInt("id_matricula"),
-                        rs.getBigDecimal("nota"),
-                        rs.getDate("data_avaliacao").toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-                );
-                System.out.println(dadosNota);
+                printNotaData(obj);
             }
+
+            System.out.println("----------------------------------------------------------------------------------------------------------------");
             return list;
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
@@ -211,5 +171,38 @@ public class NotaDAOJDBC implements NotaDAO {
             DB.closeStatement(st);
             DB.closeResultSet(rs);
         }
+    }
+
+    private Notas instantiateNota(ResultSet rs) throws SQLException {
+        Notas obj = new Notas();
+        obj.setIdNota(rs.getInt("id_nota"));
+        obj.setNota(rs.getBigDecimal("nota"));
+        obj.setDataAvaliacao(rs.getDate("data_avaliacao").toLocalDate());
+
+        Matriculas matricula = new Matriculas();
+        matricula.setIdMatricula(rs.getInt("id_matricula"));
+        obj.setMatricula(matricula);
+
+        return obj;
+    }
+
+    private void setNotaData(PreparedStatement st, Notas obj) throws SQLException {
+        st.setInt(1, obj.getMatricula().getIdMatricula());
+        st.setBigDecimal(2, obj.getNota());
+        st.setDate(3, Date.valueOf(obj.getDataAvaliacao()));
+    }
+
+    private void printNotaHeader() {
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-5s %-12s %-10s %-12s%n", "| ID", "| MATRÍCULA", "| NOTA", "| DATA                                                                            |");
+        System.out.println("----- ------------ ----------- ---------------------------------------------------------------------------------");
+    }
+
+    private void printNotaData(Notas obj) {
+        System.out.printf("  %-5d %-12d %-10.2f %-12s%n",
+                obj.getIdNota(),
+                obj.getMatricula().getIdMatricula(),
+                obj.getNota(),
+                obj.getDataAvaliacao().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
     }
 }

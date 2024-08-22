@@ -12,8 +12,8 @@ import java.util.List;
 
 import db.DB;
 import db.DbException;
+import db.DbIntegrityException;
 import model.dao.ProfessorDAO;
-import model.entities.Cursos;
 import model.entities.Professores;
 
 public class ProfessorDAOJDBC implements ProfessorDAO {
@@ -34,11 +34,7 @@ public class ProfessorDAOJDBC implements ProfessorDAO {
                             "VALUES (?, ?, ?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS);
 
-            st.setString(1, obj.getNome());
-            st.setDate(2, Date.valueOf(obj.getDataContratacao()));
-            st.setString(3, obj.getDepartamento());
-            st.setString(4, obj.getTelefone());
-            st.setString(5, obj.getEmail());
+            setProfessorData(st, obj);
 
             int rowsAffected = st.executeUpdate();
 
@@ -68,11 +64,7 @@ public class ProfessorDAOJDBC implements ProfessorDAO {
                             "SET nome = ?, data_contratacao = ?, departamento = ?, telefone = ?, email = ? " +
                             "WHERE id_professor = ?");
 
-            st.setString(1, obj.getNome());
-            st.setDate(2, Date.valueOf(obj.getDataContratacao()));
-            st.setString(3, obj.getDepartamento());
-            st.setString(4, obj.getTelefone());
-            st.setString(5, obj.getEmail());
+            setProfessorData(st, obj);
             st.setInt(6, obj.getIdProfessor());
 
             st.executeUpdate();
@@ -88,12 +80,10 @@ public class ProfessorDAOJDBC implements ProfessorDAO {
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement("DELETE FROM Professores WHERE id_professor = ?");
-
             st.setInt(1, id);
-
             st.executeUpdate();
         } catch (SQLException e) {
-            throw new DbException(e.getMessage());
+            throw new DbIntegrityException(e.getMessage());
         } finally {
             DB.closeStatement(st);
         }
@@ -107,14 +97,12 @@ public class ProfessorDAOJDBC implements ProfessorDAO {
             st = conn.prepareStatement("SELECT * FROM Professores WHERE id_professor = ?");
             st.setInt(1, id);
             rs = st.executeQuery();
+
             if (rs.next()) {
-                Professores obj = new Professores();
-                obj.setIdProfessor(rs.getInt("id_professor"));
-                obj.setNome(rs.getString("nome"));
-                obj.setDataContratacao(rs.getDate("data_contratacao").toLocalDate());
-                obj.setDepartamento(rs.getString("departamento"));
-                obj.setTelefone(rs.getString("telefone"));
-                obj.setEmail(rs.getString("email"));
+                Professores obj = instantiateProfessor(rs);
+                printProfessorHeader();
+                printProfessorData(obj);
+                System.out.println("----------------------------------------------------------------------------------------------------------------");
                 return obj;
             }
             return null;
@@ -136,29 +124,15 @@ public class ProfessorDAOJDBC implements ProfessorDAO {
 
             List<Professores> list = new ArrayList<>();
 
+            printProfessorHeader();
+
             while (rs.next()) {
-                Professores obj = new Professores();
-                obj.setIdProfessor(rs.getInt("id_professor"));
-                obj.setNome(rs.getString("nome"));
-                obj.setDataContratacao(rs.getDate("data_contratacao").toLocalDate());
-                obj.setDepartamento(rs.getString("departamento"));
-                obj.setTelefone(rs.getString("telefone"));
-                obj.setEmail(rs.getString("email"));
-
+                Professores obj = instantiateProfessor(rs);
                 list.add(obj);
-
-                // Formatar e imprimir os dados no console
-                String dadosProfessor = String.format(
-                        "ID: %d \t Nome: %s \t Data de Contratação: %s \t Departamento: %s \t Telefone: %s \t Email: %s",
-                        rs.getInt("id_professor"),
-                        rs.getString("nome"),
-                        rs.getDate("data_contratacao").toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                        rs.getString("departamento"),
-                        rs.getString("telefone"),
-                        rs.getString("email")
-                );
-                System.out.println(dadosProfessor);
+                printProfessorData(obj);
             }
+
+            System.out.println("----------------------------------------------------------------------------------------------------------------");
             return list;
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
@@ -183,29 +157,15 @@ public class ProfessorDAOJDBC implements ProfessorDAO {
 
             List<Professores> list = new ArrayList<>();
 
+            printProfessorHeader();
+
             while (rs.next()) {
-                Professores obj = new Professores();
-                obj.setIdProfessor(rs.getInt("id_professor"));
-                obj.setNome(rs.getString("nome"));
-                obj.setDataContratacao(rs.getDate("data_contratacao").toLocalDate());
-                obj.setDepartamento(rs.getString("departamento"));
-                obj.setTelefone(rs.getString("telefone"));
-                obj.setEmail(rs.getString("email"));
-
+                Professores obj = instantiateProfessor(rs);
                 list.add(obj);
-
-                // Formatar e imprimir os dados no console
-                String dadosProfessor = String.format(
-                        "ID: %d \t Nome: %s \t Data de Contratação: %s \t Departamento: %s \t Telefone: %s \t Email: %s",
-                        rs.getInt("id_professor"),
-                        rs.getString("nome"),
-                        rs.getDate("data_contratacao").toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                        rs.getString("departamento"),
-                        rs.getString("telefone"),
-                        rs.getString("email")
-                );
-                System.out.println(dadosProfessor);
+                printProfessorData(obj);
             }
+
+            System.out.println("----------------------------------------------------------------------------------------------------------------");
             return list;
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
@@ -214,4 +174,72 @@ public class ProfessorDAOJDBC implements ProfessorDAO {
             DB.closeResultSet(rs);
         }
     }
+
+    private Professores instantiateProfessor(ResultSet rs) throws SQLException {
+        Professores obj = new Professores();
+        obj.setIdProfessor(rs.getInt("id_professor"));
+        obj.setNome(rs.getString("nome"));
+        obj.setDataContratacao(rs.getDate("data_contratacao").toLocalDate());
+        obj.setDepartamento(rs.getString("departamento"));
+        obj.setTelefone(rs.getString("telefone"));
+        obj.setEmail(rs.getString("email"));
+        return obj;
+    }
+
+    private void setProfessorData(PreparedStatement st, Professores obj) throws SQLException {
+        st.setString(1, obj.getNome());
+        st.setDate(2, Date.valueOf(obj.getDataContratacao()));
+        st.setString(3, obj.getDepartamento());
+        st.setString(4, obj.getTelefone());
+        st.setString(5, obj.getEmail());
+    }
+
+    private void printProfessorHeader() {
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-5s %-20s %-12s %-15s %-15s %-30s%n", "| ID", "| NOME", "| DATA CONTR.", "| DEPTO.", "| TEL.", "| EMAIL                       |");
+        System.out.println("----- -------------------- ------------ ------------------------- --------------- ------------------------------");
+    }
+
+    private void printProfessorData(Professores obj) {
+        System.out.printf("  %-5d %-20s %-12s %-15s %-15s %-30s%n",
+                obj.getIdProfessor(),
+                obj.getNome(),
+                obj.getDataContratacao().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                obj.getDepartamento(),
+                obj.getTelefone(),
+                obj.getEmail());
+    }
+
+    public List<Professores> encontraTodosCoordenadores() throws DbException {
+        String sql = "SELECT * FROM Professores WHERE coordenador = TRUE";
+        List<Professores> list = new ArrayList<>();
+
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = conn.prepareStatement(sql);
+            rs = st.executeQuery();
+
+            printProfessorHeader();
+
+            while (rs.next()) {
+                Professores professor = instantiateProfessor(rs);
+                list.add(professor);
+                printProfessorData(professor);
+            }
+
+            System.out.println("----------------------------------------------------------------------------------------------------------------");
+
+        } catch (SQLException e) {
+            throw new DbException("Erro ao buscar coordenadores: " + e.getMessage());
+        } finally {
+            DB.closeResultSet(rs);
+            DB.closeStatement(st);
+        }
+
+        return list;
+    }
+
+
 }

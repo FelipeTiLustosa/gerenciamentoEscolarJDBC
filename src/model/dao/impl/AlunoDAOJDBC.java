@@ -28,8 +28,8 @@ public class AlunoDAOJDBC implements AlunoDAO {
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement(
-                    "INSERT INTO Alunos (nome, data_nascimento, endereco, telefone, email) " +
-                            "VALUES (?, ?, ?, ?, ?)",
+                    "INSERT INTO Alunos (nome, data_nascimento, endereco, telefone, email, senha) " +
+                            "VALUES (?, ?, ?, ?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS);
 
             setAlunosData(st, obj);
@@ -58,11 +58,12 @@ public class AlunoDAOJDBC implements AlunoDAO {
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement(
-                    "UPDATE Alunos SET nome = ?, data_nascimento = ?, endereco = ?, telefone = ?, email = ? " +
+                    "UPDATE Alunos SET nome = ?, data_nascimento = ?, endereco = ?, telefone = ?, email = ?, senha = ? " +
                             "WHERE id_aluno = ?");
 
             setAlunosData(st, obj);
-            st.setInt(6, obj.getIdAluno());
+            st.setString(6, obj.getSenha()); // Adiciona a senha
+            st.setInt(7, obj.getIdAluno());
 
             st.executeUpdate();
         } catch (SQLException e) {
@@ -180,6 +181,7 @@ public class AlunoDAOJDBC implements AlunoDAO {
         obj.setEndereco(rs.getString("endereco"));
         obj.setTelefone(rs.getString("telefone"));
         obj.setEmail(rs.getString("email"));
+        obj.setSenha(rs.getString("senha")); // Adiciona o campo senha
         return obj;
     }
 
@@ -189,6 +191,7 @@ public class AlunoDAOJDBC implements AlunoDAO {
         st.setString(3, obj.getEndereco());
         st.setString(4, obj.getTelefone());
         st.setString(5, obj.getEmail());
+        st.setString(6, obj.getSenha()); // Adiciona a senha
     }
 
     private void printAlunoHeader() {
@@ -197,7 +200,7 @@ public class AlunoDAOJDBC implements AlunoDAO {
         System.out.println("----- -------------------- ------------ ------------------------- --------------- ------------------------------");
     }
 
-    private void printAlunoData(Alunos obj) {
+        private void printAlunoData(Alunos obj) {
         System.out.printf("  %-5d %-20s %-12s %-25s %-15s %-30s%n",
                 obj.getIdAluno(),
                 obj.getNome(),
@@ -206,4 +209,5 @@ public class AlunoDAOJDBC implements AlunoDAO {
                 obj.getTelefone(),
                 obj.getEmail());
     }
+
 }

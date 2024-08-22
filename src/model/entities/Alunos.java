@@ -8,25 +8,28 @@ import java.util.Objects;
 public class Alunos implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private Integer idAluno;
+    private int idAluno;
     private String nome;
     private LocalDate dataNascimento;
     private String endereco;
     private String telefone;
     private String email;
+    private String senha;
 
     // Construtor
 
     public Alunos(){
 
     }
-    public Alunos(Integer idAluno, String nome, LocalDate dataNascimento, String endereco, String telefone, String email) {
+
+    public Alunos(int idAluno, String nome, LocalDate dataNascimento, String endereco, String telefone, String email, String senha) {
         this.idAluno = idAluno;
         this.nome = nome;
         this.dataNascimento = dataNascimento;
         this.endereco = endereco;
         this.telefone = telefone;
         this.email = email;
+        this.senha = senha;
     }
 
     public Integer getIdAluno() {
@@ -75,6 +78,14 @@ public class Alunos implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
     }
 
     @Override

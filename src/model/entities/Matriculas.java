@@ -25,8 +25,6 @@ public class Matriculas implements Serializable {
         this.dataMatricula = dataMatricula;
     }
 
-    // Getters e Setters
-
 
     public Integer getIdMatricula() {
         return idMatricula;

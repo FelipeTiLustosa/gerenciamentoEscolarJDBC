@@ -4,14 +4,16 @@ USE GerenciamentoEscolarIFPI;
 
 -- Criação das Tabelas
 
--- 1. Tabela Professores (não possui chaves estrangeiras, então deve ser criada primeiro)
+-- 1. Tabela Professores (adicionar coluna de senha e indicar se é coordenador)
 CREATE TABLE Professores (
     id_professor INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100),
     data_contratacao DATE,
     departamento VARCHAR(100),
     telefone VARCHAR(15),
-    email VARCHAR(100)
+    email VARCHAR(100),
+    senha VARCHAR(100), -- Nova coluna para senha
+    coordenador BOOLEAN DEFAULT FALSE -- Indica se é coordenador
 );
 
 -- 2. Tabela Cursos (possui chave estrangeira para Professores)
@@ -24,14 +26,15 @@ CREATE TABLE Cursos (
     FOREIGN KEY (id_professor) REFERENCES Professores(id_professor)
 );
 
--- 3. Tabela Alunos (não possui chaves estrangeiras, então pode ser criada agora)
+-- 3. Tabela Alunos (adicionar coluna de senha)
 CREATE TABLE Alunos (
     id_aluno INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100),
     data_nascimento DATE,
     endereco VARCHAR(200),
     telefone VARCHAR(15),
-    email VARCHAR(100)
+    email VARCHAR(100),
+    senha VARCHAR(100) -- Nova coluna para senha
 );
 
 -- 4. Tabela Matriculas (possui chaves estrangeiras para Alunos e Cursos)
@@ -53,15 +56,21 @@ CREATE TABLE Notas (
     FOREIGN KEY (id_matricula) REFERENCES Matriculas(id_matricula)
 );
 
+-- Criação da Tabela Coordenadores (extensão da tabela Professores)
+CREATE TABLE Coordenadores (
+    id_coordenador INT PRIMARY KEY,
+    FOREIGN KEY (id_coordenador) REFERENCES Professores(id_professor) -- Referencia a tabela Professores
+);
+
 -- Inserção de Dados
 
 -- Inserção na Tabela Professores
-INSERT INTO Professores (nome, data_contratacao, departamento, telefone, email) VALUES
-('Professor A', '2015-02-10', 'Matemática', '666666666', 'prof.a@example.com'),
-('Professor B', '2016-07-12', 'História', '777777777', 'prof.b@example.com'),
-('Professor C', '2017-09-01', 'Biologia', '888888888', 'prof.c@example.com'),
-('Professor D', '2018-03-05', 'Física', '999999999', 'prof.d@example.com'),
-('Professor E', '2019-05-23', 'Química', '101010101', 'prof.e@example.com');
+INSERT INTO Professores (nome, data_contratacao, departamento, telefone, email, senha, coordenador) VALUES
+('Professor A', '2015-02-10', 'Matemática', '666666666', 'prof.a@example.com', 'senha123', FALSE),
+('Professor B', '2016-07-12', 'História', '777777777', 'prof.b@example.com', 'senha456', FALSE),
+('Professor C', '2017-09-01', 'Biologia', '888888888', 'prof.c@example.com', 'senha789', TRUE), -- Professor C é coordenador
+('Professor D', '2018-03-05', 'Física', '999999999', 'prof.d@example.com', 'senha101', FALSE),
+('Professor E', '2019-05-23', 'Química', '101010101', 'prof.e@example.com', 'senha202', FALSE);
 
 -- Inserção na Tabela Cursos
 INSERT INTO Cursos (nome, descricao, duracao_horas, id_professor) VALUES
@@ -72,12 +81,12 @@ INSERT INTO Cursos (nome, descricao, duracao_horas, id_professor) VALUES
 ('Química Orgânica', 'Curso focado em química orgânica.', 45, 5);
 
 -- Inserção na Tabela Alunos
-INSERT INTO Alunos (nome, data_nascimento, endereco, telefone, email) VALUES
-('João Silva', '2005-05-15', 'Rua A, 123', '111111111', 'joao.silva@example.com'),
-('Maria Oliveira', '2006-08-21', 'Rua B, 456', '222222222', 'maria.oliveira@example.com'),
-('Carlos Souza', '2004-12-10', 'Rua C, 789', '333333333', 'carlos.souza@example.com'),
-('Ana Pereira', '2005-03-30', 'Rua D, 101', '444444444', 'ana.pereira@example.com'),
-('Lucas Fernandes', '2006-11-11', 'Rua E, 202', '555555555', 'lucas.fernandes@example.com');
+INSERT INTO Alunos (nome, data_nascimento, endereco, telefone, email, senha) VALUES
+('João Silva', '2005-05-15', 'Rua A, 123', '111111111', 'joao.silva@example.com', 'senhajoao'),
+('Maria Oliveira', '2006-08-21', 'Rua B, 456', '222222222', 'maria.oliveira@example.com', 'senhamaria'),
+('Carlos Souza', '2004-12-10', 'Rua C, 789', '333333333', 'carlos.souza@example.com', 'senhacarlos'),
+('Ana Pereira', '2005-03-30', 'Rua D, 101', '444444444', 'ana.pereira@example.com', 'senhaana'),
+('Lucas Fernandes', '2006-11-11', 'Rua E, 202', '555555555', 'lucas.fernandes@example.com', 'senhalucas');
 
 -- Inserção na Tabela Matriculas
 INSERT INTO Matriculas (id_aluno, id_curso, data_matricula) VALUES
@@ -94,3 +103,7 @@ INSERT INTO Notas (id_matricula, nota, data_avaliacao) VALUES
 (3, 7.5, '2024-08-20'),
 (4, 6.0, '2024-09-10'),
 (5, 10.0, '2024-10-05');
+
+-- Inserção na Tabela Coordenadores
+INSERT INTO Coordenadores (id_coordenador) VALUES
+(3); -- Professor C é coordenador
